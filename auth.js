@@ -5,11 +5,8 @@ import { authConfig } from "@/auth.config";
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   callbacks: {
-    async signIn({ profile }) {
-      return (
-        profile?.email?.endsWith(process.env.AUTH_ALLOWED_EMAIL_DOMAINS) ??
-        false
-      );
+    async signIn() {
+      return true;
     },
     async jwt({ token, profile }) {
       const email = profile?.email ?? token.email;
