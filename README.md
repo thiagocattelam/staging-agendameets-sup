@@ -1,6 +1,6 @@
 # AgendaMeets
 
-Sistema de gerenciamento de agendamentos para equipes de atendimento, com autenticação via Google, importação de dados a partir do Google Sheets e sincronização com a Google Agenda de cada atendente.
+AgendaMeets é um sistema de gerenciamento de agendamentos para equipes de atendimento, permitindo organizar e acompanhar reuniões e atendimentos por atendente, assunto e status, com alertas sonoros antes do início de cada compromisso. O acesso é feito via login Google restrito ao domínio da equipe, e cada atendente pode sincronizar seus agendamentos com sua própria Google Agenda.
 
 ## Funcionalidades
 

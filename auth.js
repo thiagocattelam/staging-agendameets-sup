@@ -1,12 +1,13 @@
 import NextAuth from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { authConfig } from "@/auth.config";
+import { isAllowedEmailDomain } from "@/lib/emailDomain";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   callbacks: {
-    async signIn() {
-      return true;
+    async signIn({ profile }) {
+      return isAllowedEmailDomain(profile?.email);
     },
     async jwt({ token, profile }) {
       const email = profile?.email ?? token.email;
