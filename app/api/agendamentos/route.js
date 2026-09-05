@@ -1,10 +1,9 @@
-import { auth } from "@/auth";
+import { isAuthenticated } from "@/lib/apiAuth";
 import { prisma } from "@/lib/prisma";
 import { criarEvento } from "@/lib/googleCalendar";
 
 export async function GET(request) {
-  const session = await auth();
-  if (!session?.atendenteId) {
+  if (!(await isAuthenticated(request))) {
     return Response.json({ error: "Não autorizado" }, { status: 401 });
   }
 
@@ -47,8 +46,7 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  const session = await auth();
-  if (!session?.atendenteId) {
+  if (!(await isAuthenticated(request))) {
     return Response.json({ error: "Não autorizado" }, { status: 401 });
   }
 

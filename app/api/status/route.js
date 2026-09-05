@@ -1,9 +1,8 @@
-import { auth } from "@/auth";
+import { isAuthenticated } from "@/lib/apiAuth";
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
-  const session = await auth();
-  if (!session?.atendenteId) {
+export async function GET(request) {
+  if (!(await isAuthenticated(request))) {
     return Response.json({ error: "Não autorizado" }, { status: 401 });
   }
 

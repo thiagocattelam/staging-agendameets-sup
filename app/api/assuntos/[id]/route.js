@@ -1,9 +1,8 @@
-import { auth } from "@/auth";
+import { isAuthenticated } from "@/lib/apiAuth";
 import { prisma } from "@/lib/prisma";
 
 export async function PUT(request, { params }) {
-  const session = await auth();
-  if (!session?.atendenteId) {
+  if (!(await isAuthenticated(request))) {
     return Response.json({ error: "Não autorizado" }, { status: 401 });
   }
 
@@ -17,9 +16,8 @@ export async function PUT(request, { params }) {
   return Response.json(assunto);
 }
 
-export async function DELETE(_, { params }) {
-  const session = await auth();
-  if (!session?.atendenteId) {
+export async function DELETE(request, { params }) {
+  if (!(await isAuthenticated(request))) {
     return Response.json({ error: "Não autorizado" }, { status: 401 });
   }
 
