@@ -161,16 +161,60 @@ npm install
 npx eas-cli login
 npx eas-cli build:configure
 npx eas-cli build --profile development --platform android
-# instala o APK gerado no celular (link/QR code aparece ao final do build)
+# instala o APK gerado no celular/emulador (link/QR code aparece ao final do build)
+```
 
-# loop normal de desenvolvimento (recarrega o JS sem precisar buildar de novo)
+A partir daí, o loop normal (recarrega o JS sem precisar buildar de novo) depende de testar num **celular físico** ou num **emulador** — os dois exigem configuração de rede diferente, porque não estão na mesma posição em relação ao WSL.
+
+#### Celular físico (mesma rede Wi-Fi do PC)
+
+```env
+# mobile/.env
+EXPO_PUBLIC_API_URL="http://SEU_IP_DE_REDE_LOCAL:3000"
+```
+
+```bash
 npx expo start --dev-client
 ```
 
-Notas:
+Pré-requisitos no Windows:
+- Modo `mirrored` do WSL ativo (`networkingMode=mirrored` em `%UserProfile%\.wslconfig`, seguido de `wsl --shutdown`) — sem isso o WSL não expõe seus serviços na rede local de verdade.
+- Portas `3000` (backend) e `8081` (Metro) liberadas no Firewall do Windows Defender para conexões de entrada, em **todos os perfis** (Domínio/Privada/Pública).
 
-- O Expo SDK 57 exige **Node ≥ 20**; se o Node padrão do sistema for mais antigo (ex.: via `nvm`), rode `nvm use 24` antes.
-- No **WSL**, o celular só alcança o backend/Metro se a rede do WSL estiver em modo `mirrored` (`networkingMode=mirrored` em `%UserProfile%\.wslconfig`, seguido de `wsl --shutdown`) e as portas `3000` (backend) e `8081` (Metro) estiverem liberadas no Firewall do Windows para conexões de entrada.
+#### Emulador Android (rodado no Windows, fora do WSL)
+
+O emulador do Android Studio não roda de forma performática dentro do WSL2 — ele precisa rodar no Windows. Isso muda como a rede funciona:
+
+1. **Instale o Android Studio no Windows** (não no WSL) e crie um AVD com uma imagem **"Google Play"** (não só "Google APIs" — sem isso o Google Sign-In não funciona por falta do Play Services). Depois de criado, adicione uma conta Google de verdade em Configurações → Contas dentro do próprio emulador.
+
+2. **Ponte do `adb`**: o emulador é gerenciado pelo Windows, então em vez de instalar um Android SDK dentro do WSL, aponte para o `adb.exe` que o Android Studio já instalou:
+   ```bash
+   mkdir -p "$HOME/.local/bin"
+   cat > "$HOME/.local/bin/adb" << 'EOF'
+   #!/bin/bash
+   exec "/mnt/c/Users/<SeuUsuario>/AppData/Local/Android/Sdk/platform-tools/adb.exe" "$@"
+   EOF
+   chmod +x "$HOME/.local/bin/adb"
+   ```
+   Garanta que `export PATH="$HOME/.local/bin:$PATH"` esteja no **`~/.bashrc`** (não só no `~/.profile`) — terminais não-login, como o integrado do VSCode, só leem o `.bashrc`. Teste com `adb devices` (emulador aberto) num terminal novo.
+
+3. **Endereço de rede**: o emulador tem sua própria NAT virtual: tentar alcançar o IP de rede local da própria máquina (`192.168.x.x`) falha de forma inconsistente vindo de dentro dele. Use o alias especial `10.0.2.2`, que sempre aponta pro host, tanto no `.env` quanto no comando que inicia o Metro:
+   ```env
+   # mobile/.env
+   EXPO_PUBLIC_API_URL="http://10.0.2.2:3000"
+   ```
+   ```bash
+   REACT_NATIVE_PACKAGER_HOSTNAME=10.0.2.2 npx expo start --dev-client
+   ```
+   (`REACT_NATIVE_PACKAGER_HOSTNAME` sobrescreve o endereço que o Metro anuncia pro app carregar o bundle — sem isso, ele detecta e usa o IP de rede local sozinho, que não funciona pro emulador.)
+
+4. **Firewall do Windows**: além de liberar as portas `3000` e `8081` (mesmo passo do celular), abra as propriedades da regra de cada porta → aba **Avançado** → **Travessia de borda** → troque para **"Permitir percurso de borda"**. Sem isso, o Windows Firewall trata o tráfego vindo da NAT virtual do emulador como tráfego "de borda" e bloqueia mesmo com a regra de porta liberada.
+
+5. Com o emulador aberto e o app instalado, apertar **`a`** no terminal do `expo start` reinstala/abre automaticamente nele (não precisa de QR code).
+
+**Resumindo a troca entre os dois**: os valores de `EXPO_PUBLIC_API_URL` (`.env`) e do prefixo `REACT_NATIVE_PACKAGER_HOSTNAME` são opostos entre celular e emulador — ao trocar de um pro outro, lembre de ajustar os dois e reiniciar o `expo start`.
+
+Nota geral: o Expo SDK 57 exige **Node ≥ 20**; se o Node padrão do sistema for mais antigo (ex.: via `nvm`), rode `nvm use 24` antes de qualquer comando `expo`/`eas`.
 
 ## Configuração
 

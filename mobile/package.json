@@ -18,6 +18,8 @@
   },
   "scripts": {
     "start": "expo start",
+    "dev": "expo start --dev-client",
+    "emulator": "REACT_NATIVE_PACKAGER_HOSTNAME=10.0.2.2 npx expo start --dev-client",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web"
