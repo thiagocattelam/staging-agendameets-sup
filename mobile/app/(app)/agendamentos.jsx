@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, FlatList, StyleSheet, Pressable, RefreshControl } from "react-native";
+import { View, Text, FlatList, StyleSheet, Pressable, RefreshControl, AppState } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import { apiFetch } from "../../services/api";
+import { useAlertaAgendamentos } from "../../hooks/useAlertaAgendamentos";
+import { formatHoraSaoPaulo } from "../../utils/date";
 
 function startOfToday() {
   const d = new Date();
@@ -49,6 +51,15 @@ export default function AgendamentosScreen() {
     load();
   }, [load]);
 
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active") load();
+    });
+    return () => subscription.remove();
+  }, [load]);
+
+  useAlertaAgendamentos(agendamentos);
+
   if (!atendente) {
     return (
       <View style={[styles.container, styles.empty]}>
@@ -83,10 +94,7 @@ export default function AgendamentosScreen() {
           <View style={styles.card}>
             <Text style={styles.cliente}>{item.cliente}</Text>
             <Text style={styles.horario}>
-              {new Date(item.dataHoraInicio).toLocaleTimeString("pt-BR", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              {formatHoraSaoPaulo(item.dataHoraInicio)}
             </Text>
             {item.status && (
               <View style={[styles.badge, { backgroundColor: item.status.corHex }]}>

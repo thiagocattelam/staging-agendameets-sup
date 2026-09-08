@@ -13,7 +13,8 @@ export async function POST(request) {
   let payload;
   try {
     payload = await verifyGoogleIdToken(idToken);
-  } catch {
+  } catch (err) {
+    console.error("verifyGoogleIdToken falhou:", err);
     return Response.json({ error: "Token do Google inválido" }, { status: 401 });
   }
 

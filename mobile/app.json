@@ -12,6 +12,7 @@
     },
     "android": {
       "package": "com.agendameets.mobile",
+      "permissions": ["SCHEDULE_EXACT_ALARM"],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -27,7 +28,15 @@
       "expo-status-bar",
       "expo-secure-store",
       "expo-dev-client",
-      "@react-native-google-signin/google-signin"
+      "@react-native-google-signin/google-signin",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#8b47ff",
+          "defaultChannel": "default"
+        }
+      ]
     ],
     "extra": {
       "router": {},

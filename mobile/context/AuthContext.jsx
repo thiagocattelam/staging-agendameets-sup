@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { loginWithGoogleIdToken, getStoredSession, clearSession } from "../services/auth";
 import { signOutGoogle } from "../services/googleAuth";
+import { ensureNotificationsReadyAsync } from "../services/notifications";
 
 const AuthContext = createContext(null);
 
@@ -19,6 +20,10 @@ export function AuthProvider({ children }) {
       })
       .finally(() => setIsLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (atendente) ensureNotificationsReadyAsync();
+  }, [atendente]);
 
   const signIn = useCallback(async (idToken) => {
     const result = await loginWithGoogleIdToken(idToken);
