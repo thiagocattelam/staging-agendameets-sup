@@ -11,7 +11,7 @@ AgendaMeets é um sistema de gerenciamento de agendamentos para equipes de atend
 - Sincronização de agendamentos com a Google Agenda pessoal de cada atendente (conexão opt-in)
 - CRUD de atendentes e assuntos
 - Acesso restrito a contas `@domainexemplo` via Google OAuth
-- App mobile (Expo) com login Google nativo e lista dos agendamentos do dia do atendente — ver [App mobile](#app-mobile)
+- App mobile (Expo) com login Google nativo, lista dos agendamentos do dia do atendente e lembretes via notificação local — ver [App mobile](#app-mobile)
 
 ## Stack
 
@@ -81,7 +81,7 @@ agendameets-sup/
 
 ### Sistema de alertas
 
-O hook `useAlertaAgendamentos` roda no cliente e faz polling a cada 60 segundos para buscar os agendamentos do dia do atendente logado. Para cada um, agenda um `setTimeout` para disparar `alertaMinutos` antes do início — tocando um alarme de áudio via Web Audio API e exibindo um modal de notificação. (No mobile, alertas via push ainda não foram implementados.)
+O hook `useAlertaAgendamentos` roda no cliente e faz polling a cada 60 segundos para buscar os agendamentos do dia do atendente logado. Para cada um, agenda um `setTimeout` para disparar `alertaMinutos` antes do início — tocando um alarme de áudio via Web Audio API e exibindo um modal de notificação. No mobile a mesma regra (`alertaMinutos`) existe, mas o mecanismo é outro — ver [Lembretes por notificação](#lembretes-por-notificação), na seção App mobile — porque `setTimeout` não sobrevive ao app em segundo plano ou fechado.
 
 ### Autenticação
 
@@ -109,7 +109,7 @@ Cada atendente pode conectar sua própria conta Google (a mesma usada no login) 
 
 ## App mobile
 
-Um app React Native (Expo, SDK 57) em `mobile/` consome a mesma API do backend — não é um sistema separado, é mais um cliente. Escopo atual: login e lista dos agendamentos do dia do atendente logado.
+Um app React Native (Expo, SDK 57) em `mobile/` consome a mesma API do backend — não é um sistema separado, é mais um cliente. Escopo atual: login, lista dos agendamentos do dia do atendente logado e lembretes via notificação local antes de cada agendamento.
 
 ### Decisões de stack
 
@@ -118,27 +118,43 @@ Um app React Native (Expo, SDK 57) em `mobile/` consome a mesma API do backend �
 | Expo Router | Roteamento por arquivo, mesmo raciocínio do App Router do Next.js |
 | `@react-native-google-signin/google-signin` | Lib oficial para login Google nativo. **Exige build de desenvolvimento (EAS)** — não roda no Expo Go. O fluxo genérico via `expo-auth-session` foi descartado: não funciona no Expo Go (não recebe redirect de scheme customizado) e exigiria um client OAuth incompatível com esse fluxo. |
 | JWT próprio via `Authorization: Bearer` | O backend usa sessão por cookie (NextAuth), que não funciona num app nativo. O mobile troca o `idToken` do Google por um JWT próprio em `/api/mobile/login`. |
+| `expo-notifications`, notificação **local** (não push remoto) | O alerta do web usa `setTimeout`, que não sobrevive a app em segundo plano/fechado. A notificação local é agendada pelo próprio sistema operacional e sobrevive a isso sem precisar de um servidor de push — dispensa salvar token de push no backend e ter um cron/trigger pra disparar no horário certo. |
 
 ### Estrutura
 
 ```
 mobile/
-├── app.json                 # scheme, android.package, plugins (expo-router, expo-dev-client, google-signin)
+├── app.json                 # scheme, android.package, plugins (expo-router, expo-dev-client, google-signin, expo-notifications)
 ├── eas.json                  # perfis de build (development/preview/production)
 ├── .env.example
+├── assets/notification-icon.png  # ícone (canal alpha) usado pela notificação no Android
 ├── app/
 │   ├── _layout.jsx           # AuthProvider + Stack
 │   ├── index.jsx              # redireciona para /login ou /(app)/agendamentos
 │   ├── login.jsx               # botão "Entrar com Google"
 │   └── (app)/
 │       ├── _layout.jsx         # guarda de rota (redireciona se não autenticado)
-│       └── agendamentos.jsx    # agendamentos do dia do atendente logado
-├── context/AuthContext.jsx     # token/atendente/isLoading + signIn/signOut
+│       └── agendamentos.jsx    # agendamentos do dia + aciona useAlertaAgendamentos
+├── context/AuthContext.jsx     # token/atendente/isLoading + signIn/signOut; pede permissão de notificação no login
+├── hooks/useAlertaAgendamentos.js  # agenda/cancela lembretes locais a partir da lista de agendamentos
+├── utils/date.js               # formatHoraSaoPaulo — formatação de hora compartilhada
 └── services/
     ├── googleAuth.js           # GoogleSignin.configure/signIn
     ├── auth.js                  # POST /api/mobile/login + persistência via SecureStore
-    └── api.js                   # fetch com header Authorization: Bearer
+    ├── api.js                   # fetch com header Authorization: Bearer
+    └── notifications.js         # permissão, canal Android, agendar/cancelar notificação local
 ```
+
+### Lembretes por notificação
+
+Como `setTimeout` (usado no web) não sobrevive ao app em segundo plano ou fechado, o mobile agenda **notificações locais pelo sistema operacional** (`expo-notifications`) em vez de um timer em JS.
+
+- `services/notifications.js` concentra a mecânica: cria o canal Android `"default"`, pede a permissão (`Notifications.requestPermissionsAsync`) e expõe `scheduleAgendamentoReminder` / `cancelAgendamentoReminder` / `getScheduledAgendamentoIds`. Agenda usando o próprio `id` do agendamento como `identifier`, cancelando e reagendando a cada chamada — reagendar por causa de um horário alterado no web nunca duplica a notificação.
+- `hooks/useAlertaAgendamentos.js` recebe a lista de agendamentos já buscada pela tela e reconcilia: calcula `alertaMinutos ?? atendente.alertaMinutos ?? 30` antes de `dataHoraInicio` (mesma regra do web), agenda os válidos (até 24h à frente) e cancela — via `getAllScheduledNotificationsAsync()` — qualquer notificação agendada que não corresponda mais a um agendamento válido. Consultar o SO em vez de guardar estado em memória é o que permite detectar isso mesmo depois de fechar e reabrir o app do zero.
+- Sincronização acontece ao abrir a tela, no pull-to-refresh e ao voltar o app pro primeiro plano (`AppState`) — sem polling contínuo como no web, já que a notificação agendada sobrevive ao app fechado.
+- A permissão é pedida automaticamente uma vez, logo após o login (em `AuthContext.jsx`, quando `atendente` fica disponível) — sem tela explicativa antes do prompt nativo do Android.
+- **Alarme exato**: a partir do Android 12, uma notificação agendada para um horário exato exige a permissão `SCHEDULE_EXACT_ALARM` (declarada em `app.json` → `android.permissions`). Em versões recentes do Android, só declarar no manifest não basta — o usuário precisa liberar manualmente em **Configurações → Apps → AgendaMeets → Alarmes e lembretes**. Sem essa liberação, o Android ainda agenda a notificação, só que dentro de uma janela de até 1h de atraso em vez de no horário exato.
+- Fora de escopo por enquanto: push remoto do servidor (exigiria salvar o token de push no backend e um cron/trigger pra disparar), deep-link ao tocar a notificação (não existe tela de detalhe ainda) e som customizado (usa o som padrão do canal Android).
 
 ### Variáveis de ambiente (`mobile/.env`)
 
@@ -163,6 +179,8 @@ npx eas-cli build:configure
 npx eas-cli build --profile development --platform android
 # instala o APK gerado no celular/emulador (link/QR code aparece ao final do build)
 ```
+
+Depois de instalar, na primeira vez faça login uma vez pra conceder a permissão de notificação (pedida automaticamente) e, em versões recentes do Android, libere manualmente **Configurações → Apps → AgendaMeets → Alarmes e lembretes** — sem isso os lembretes de agendamento disparam com até 1h de atraso em vez de no horário exato (ver [Lembretes por notificação](#lembretes-por-notificação)).
 
 A partir daí, o loop normal (recarrega o JS sem precisar buildar de novo) depende de testar num **celular físico** ou num **emulador** — os dois exigem configuração de rede diferente, porque não estão na mesma posição em relação ao WSL.
 
