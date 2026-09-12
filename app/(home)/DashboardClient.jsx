@@ -15,7 +15,7 @@ import Skeleton from "@/components/Skeleton";
 const ROXO = "#8b47ff";
 const ROXO_ATIVO = "#7a38e6";
 const DIAS_SEMANA_CURTO = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-const ORDEM_SEMANA = [1, 2, 3, 4, 5, 6, 0]; // Segunda a domingo
+const ORDEM_SEMANA = [1, 2, 3, 4, 5, 6, 0];
 
 function toDateKey(d) {
   return [
@@ -234,7 +234,6 @@ export default function DashboardClient() {
         </p>
       </div>
 
-      {/* Filtro de período */}
       <div className="bg-white border border-gray-200 rounded-2xl px-5 py-3 shadow-sm mb-6 flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
           <button
@@ -277,7 +276,6 @@ export default function DashboardClient() {
         )}
       </div>
 
-      {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h3 className="text-base font-semibold text-gray-700 mb-1">
@@ -376,7 +374,6 @@ export default function DashboardClient() {
         </div>
       </div>
 
-      {/* Lista de agendamentos do período */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
         <div className="px-6 pt-6 pb-4">
           <h3 className="text-base font-semibold text-gray-700 mb-1">

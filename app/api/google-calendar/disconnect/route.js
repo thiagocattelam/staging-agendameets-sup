@@ -7,15 +7,13 @@ export async function POST() {
     return Response.json({ ok: false }, { status: 401 });
   }
 
-  await prisma.atendente.update({
-    where: { id: session.atendenteId },
-    data: {
-      googleAccessToken: null,
-      googleRefreshToken: null,
-      googleTokenExpiry: null,
-      googleCalendarConectado: false,
-    },
-  });
+  await prisma.$transaction([
+    prisma.googleCredencial.deleteMany({ where: { atendenteId: session.atendenteId } }),
+    prisma.atendente.update({
+      where: { id: session.atendenteId },
+      data: { googleCalendarConectado: false },
+    }),
+  ]);
 
   return Response.json({ ok: true });
 }

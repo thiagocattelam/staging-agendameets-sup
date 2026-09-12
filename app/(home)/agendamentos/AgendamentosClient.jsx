@@ -286,7 +286,6 @@ export default function AgendamentosClient() {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
-      {/* Cabeçalho */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
         <div>
           <h2 className="text-2xl font-semibold text-gray-800">Agendamentos</h2>
@@ -350,7 +349,6 @@ export default function AgendamentosClient() {
         </div>
       </div>
 
-      {/* Filtro de datas */}
       <div className="bg-white border border-gray-200 rounded-2xl px-5 py-3 shadow-sm mb-6 flex flex-wrap items-center gap-3">
         <DatePicker
           selectsRange
@@ -485,7 +483,6 @@ export default function AgendamentosClient() {
         </div>
       </div>
 
-      {/* Lista */}
       <div>
         {loading ? (
           <SkeletonAgendamentosList />
@@ -513,7 +510,6 @@ export default function AgendamentosClient() {
                           borderLeftColor: ag.status?.corHex ?? "#e5e7eb",
                         }}
                       >
-                        {/* Linha superior: horário + status + menu */}
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-sm font-mono text-gray-400">
                             {formatHora(ag.dataHoraInicio)} –{" "}
@@ -549,12 +545,10 @@ export default function AgendamentosClient() {
                           </div>
                         </div>
 
-                        {/* Cliente */}
                         <p className="text-base font-semibold text-gray-800">
                           {ag.cliente}
                         </p>
 
-                        {/* Atendente + assuntos */}
                         <div className="flex items-center gap-2 text-sm text-gray-500 flex-wrap">
                           <span>{ag.atendente.nome}</span>
                           {ag.assuntos.length > 0 && (
@@ -567,7 +561,6 @@ export default function AgendamentosClient() {
                           )}
                         </div>
 
-                        {/* Link Umbler + Observações */}
                         <div className="flex items-center gap-3 mt-0.5">
                           {ag.linkUmbler && (
                             <a
@@ -594,7 +587,6 @@ export default function AgendamentosClient() {
                           )}
                         </div>
 
-                        {/* Dropdown menu */}
                         {menuAberto === ag.id && (
                           <div
                             ref={menuRef}
@@ -630,7 +622,6 @@ export default function AgendamentosClient() {
         )}
       </div>
 
-      {/* Paginação */}
       {totalPaginas > 1 && (
         <div className="flex items-center justify-center gap-1 mt-8">
           <button
@@ -677,7 +668,6 @@ export default function AgendamentosClient() {
         </div>
       )}
 
-      {/* Modal de criação/edição */}
       <AgendamentoModal
         aberto={modalAberto}
         onFechar={() => setModalAberto(false)}
@@ -688,7 +678,6 @@ export default function AgendamentosClient() {
         assuntosList={assuntosList}
       />
 
-      {/* Modal de confirmação de exclusão */}
       {modalDeleteAberto && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl w-full max-w-sm shadow-xl overflow-hidden">

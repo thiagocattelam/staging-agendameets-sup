@@ -4,7 +4,6 @@
 @source "../app/**/*.{js,jsx,ts,tsx}";
 @source "../components/**/*.{js,jsx,ts,tsx}";
 
-/* react-datepicker theme */
 .react-datepicker {
   border: 1px solid #e5e7eb;
   border-radius: 0.75rem;

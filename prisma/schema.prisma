@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
@@ -23,11 +17,19 @@ model Atendente{
   createdAt DateTime @default(now())
   agendamentos Agendamento[]
 
-  googleAccessToken String?
-  googleRefreshToken String?
-  googleTokenExpiry DateTime?
   googleCalendarConectado Boolean @default(false)
+  googleCredencial GoogleCredencial?
 }
+model GoogleCredencial{
+  id String @id @default(cuid())
+  accessToken String?
+  refreshToken String?
+  tokenExpiry DateTime?
+
+  atendente Atendente @relation(fields: [atendenteId], references: [id], onDelete: Cascade)
+  atendenteId String @unique
+}
+
 model Agendamento{
   id String @id @default(cuid())
   dataHoraInicio DateTime
@@ -57,7 +59,7 @@ model Assunto{
 model Status{
   id String @id @default(cuid())
   descricao String
-  corHex String // ex: "#22c55e" para colorir o badge na lista
+  corHex String
   agendamentos Agendamento[]
 }
 

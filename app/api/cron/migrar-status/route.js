@@ -1,7 +1,5 @@
 import { prisma } from "@/lib/prisma";
 
-// Corte fixo: só agendamentos criados a partir da inclusão desta feature em produção
-// são elegíveis para migração automática. Não alterar retroativamente.
 const ELEGIVEL_DESDE = new Date("2026-07-11T02:00:40.000Z");
 
 function inicioDoDiaSaoPaulo(data) {

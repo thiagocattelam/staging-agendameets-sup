@@ -42,31 +42,22 @@ const navLinks = [
 ];
 
 export default function Header() {
-  // Rota atual para destacar o link ativo no menu
   const currentPath = usePathname();
 
-  // Controla se a sidebar está expandida ou recolhida
   const [isOpen, setIsOpen] = useState(false);
 
-  // Controla se o popover de informações do usuário está visível
   const [popoverAberto, setPopoverAberto] = useState(false);
 
-  // Ref da sidebar inteira — usado para fechar ao clicar fora
   const ref = useRef(null);
 
-  // Ref do botão do usuário — usado para posicionar o popover
   const userButtonRef = useRef(null);
 
-  // Ref do popover — usado para fechar ao clicar fora dele
   const popoverRef = useRef(null);
 
-  // Dados do usuário logado via NextAuth
   const { data: session } = useSession();
 
-  // Estado da conexão com o Google Agenda do atendente logado
   const [googleConectado, setGoogleConectado] = useState(null);
 
-  // Fecha a sidebar ao clicar fora dela
   useEffect(() => {
     if (!isOpen) return;
     function handleClickOutside(e) {
@@ -78,7 +69,6 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  // Fecha o popover do usuário ao clicar fora dele
   useEffect(() => {
     if (!popoverAberto) return;
     function handleClickOutside(e) {
@@ -90,7 +80,6 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [popoverAberto]);
 
-  // Busca o status da conexão com o Google Agenda ao abrir o popover
   useEffect(() => {
     if (!popoverAberto || !session?.atendenteId) return;
     fetch("/api/google-calendar/status")
@@ -99,7 +88,6 @@ export default function Header() {
       .catch(() => {});
   }, [popoverAberto, session?.atendenteId]);
 
-  // Avisa se a tentativa de conexão falhou por ser uma conta Google diferente do login
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("googleCalendarErro") === "email_mismatch") {
@@ -125,7 +113,6 @@ export default function Header() {
       className={`${isOpen ? "w-[280px]" : "w-[60px]"} fixed top-0 left-0 z-40 h-screen overflow-y-auto bg-white border-r border-gray-200 flex flex-col transition-all duration-200`}
       style={{ fontFamily: "Barlow, sans-serif" }}
     >
-      {/* Botão de abrir/fechar a sidebar */}
       <div className="px-3 py-3">
         <button
           onClick={() => setIsOpen(!isOpen)}
@@ -137,7 +124,6 @@ export default function Header() {
         </button>
       </div>
 
-      {/* Links de navegação */}
       <nav className="flex flex-col gap-1 px-3 py-3 flex-1">
         {navLinks.map(({ href, label, icon: Icon }) => {
           const active = currentPath === href;
@@ -166,10 +152,8 @@ export default function Header() {
         })}
       </nav>
 
-      {/* Área do usuário logado — só renderiza se houver sessão ativa */}
       {session?.user && (
         <div className="relative px-3 py-4 border-t border-gray-200">
-          {/* Botão que exibe foto e nome do usuário e abre o popover ao clicar */}
           <button
             ref={userButtonRef}
             onClick={() => setPopoverAberto(!popoverAberto)}
@@ -192,10 +176,8 @@ export default function Header() {
             </div>
           </button>
 
-          {/* Popover com detalhes do usuário — posicionado com fixed para sair da sidebar */}
           {popoverAberto &&
             (() => {
-              // Calcula a posição do botão na tela para ancorar o popover acima dele
               const rect = userButtonRef.current?.getBoundingClientRect();
               return (
                 <div

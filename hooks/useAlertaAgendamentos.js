@@ -23,9 +23,7 @@ export function tocarAlarme() {
       osc.start(ctx.currentTime + inicio);
       osc.stop(ctx.currentTime + inicio + dur + 0.05);
     });
-  } catch {
-    // Web Audio API não disponível
-  }
+  } catch {}
 }
 
 export function useAlertaAgendamentos({ onAlertar }) {
@@ -80,9 +78,7 @@ export function useAlertaAgendamentos({ onAlertar }) {
       const res = await fetch(`/api/agendamentos?${params}`);
       const json = await res.json();
       agendarTimers(json.data ?? []);
-    } catch {
-      // silencia erros de rede
-    }
+    } catch {}
   }, [session?.atendenteId, agendarTimers]);
 
   useEffect(() => {

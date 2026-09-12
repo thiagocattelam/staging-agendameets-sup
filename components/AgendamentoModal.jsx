@@ -404,7 +404,6 @@ export default function AgendamentoModal({
           className="flex flex-col overflow-y-auto flex-1 scrollbar-hide"
         >
           <div className="px-6 py-5 flex flex-col gap-4">
-            {/* Data e horários */}
             <div className="flex gap-3">
               <div className="flex-1">
                 <label className="text-xs font-medium text-gray-500 mb-1 block">
@@ -570,7 +569,6 @@ export default function AgendamentoModal({
               </div>
             </div>
 
-            {/* Cliente */}
             <div>
               <label className="text-xs font-medium text-gray-500 mb-1 block">
                 Cliente
@@ -587,7 +585,6 @@ export default function AgendamentoModal({
               />
             </div>
 
-            {/* Atendente e Status */}
             <div className="flex gap-3">
               <div className="flex-1">
                 <label className="text-xs font-medium text-gray-500 mb-1 block">
@@ -688,7 +685,6 @@ export default function AgendamentoModal({
               </div>
             </div>
 
-            {/* Assuntos */}
             <div>
               <label className="text-xs font-medium text-gray-500 mb-2 block">
                 Assuntos
@@ -740,7 +736,6 @@ export default function AgendamentoModal({
               </div>
             </div>
 
-            {/* Alerta */}
             <div>
               <label className="text-xs font-medium text-gray-500 mb-1 block">
                 Alerta (min antes){" "}
@@ -773,7 +768,6 @@ export default function AgendamentoModal({
               </div>
             </div>
 
-            {/* Link Umbler */}
             <div>
               <label className="text-xs font-medium text-gray-500 mb-1 block">
                 Link Umbler
@@ -793,7 +787,6 @@ export default function AgendamentoModal({
               />
             </div>
 
-            {/* Observações */}
             <div>
               <label className="text-xs font-medium text-gray-500 mb-1 block">
                 Observações{" "}

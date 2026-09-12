@@ -68,7 +68,7 @@ export async function POST(request) {
     include: { atendente: true },
   });
 
-  const googleEventId = await criarEvento(agendamento.atendente, agendamento);
+  const googleEventId = await criarEvento(agendamento.atendenteId, agendamento);
   if (googleEventId) {
     await prisma.agendamento.update({ where: { id: agendamento.id }, data: { googleEventId } });
   }
